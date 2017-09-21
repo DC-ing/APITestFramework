@@ -1,0 +1,24 @@
+
+# 项目忽略文件
+/test-output
+/test-result
+/target
+/log
+test-datas/~$*
+/release
+
+# Eclipse
+/bin
+/.settings
+.classpath
+.project
+*.class
+
+# IDEA
+/.idea
+*.iml
+
+
+*.ipr
+*.iws
+SimpleTest.java
