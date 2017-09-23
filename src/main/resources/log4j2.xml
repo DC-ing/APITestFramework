@@ -10,18 +10,18 @@
         </Console>
         <!--文件会打印出所有信息，这个log每次运行程序会自动清空，由append属性决定，这个也挺有用的，适合临时测试用-->
         <!-- append属性:false只保存此次的 log，true 保存所有运行的 log -->
-        <File name="log" fileName="log/API-test.log" append="false">
+        <File name="log" fileName="log/API-test-latest.log" append="false">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %class{36}.%method:%line - %msg%xEx%n"/>
         </File>
         <!--这个会打印出所有的信息，每次大小超过size，则这size大小的日志会自动存入按年份-月份-日期建立的文件夹下面并进行压缩，作为存档-->
-        <RollingFile name="RollingFile" fileName="log/API-test-total.log"
+        <RollingFile name="RollingFile" fileName="log/API-test-all.log"
                      filePattern="log/$${date:yyyy-MM-dd}/app-%d{MM-dd-yyyy}-%i.log.gz">
             <PatternLayout pattern="%d{yyyy-MM-dd 'at' HH:mm:ss.SSS} %-5level %class{36}.%method:%line - %msg%xEx%n"/>
             <Policies>
                 <!-- 指定的 size，超过会自动压缩 -->
                 <SizeBasedTriggeringPolicy size="1MB"/>
-                <!-- 以1小时为间隔压缩日志 -->
-            	<TimeBasedTriggeringPolicy interval="1"/>
+                <!-- 以24小时为间隔压缩日志 -->
+            	<TimeBasedTriggeringPolicy interval="24"/>
             </Policies>
         </RollingFile>
     </appenders>
@@ -33,3 +33,4 @@
         </root>
     </loggers>
 </Conconfiguration>
+
