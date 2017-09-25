@@ -21,10 +21,14 @@
 安装 java 即可。
 
 ## 使用方法
-使用方法非常简单，编写好接口测试用例（Excel 版本）后，直接在终端运行命令即可。
+使用方法非常简单，编写好接口测试用例（Excel 版本）后，直接在终端运行命令即可，可支持同时测试多个 Excel 测试用例。
 
 ```
-java -jar /the/path/of/jar /api/test/excel/file/path1 /api/test/excel/file/path2
+# 测试1个 Excel 测试用例
+java -jar /the/path/of/jar /api/test/excel/file/fullpath
+
+# 同时测试2个 Excel 测试用例
+java -jar /the/path/of/jar /api/test/excel/file/fullpath1 /api/test/excel/file/fullpath2
 ```
 
 PS：接口测试用例模板请见`test-datas`文件夹。
