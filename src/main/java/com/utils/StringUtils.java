@@ -68,4 +68,34 @@ public class StringUtils {
     public static String[] getSplitString(String split, String regex) {
         return split.split(regex);
     }
+
+    /**
+     * 判断输入的字符串参数是否为空。
+     *
+     * @param content 输入的字符串
+     *
+     * @return 输入的字符串为空则返回true,反之则返回false
+     */
+    public static boolean isEmpty(String content) {
+        if (content == null || content.length() == 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * 判断输入的字符串参数是否不为空。
+     *
+     * @param content 输入的字符串
+     *
+     * @return 输入的字符串不为空则返回true,反之则返回false
+     */
+    public static boolean isNotEmpty(String content) {
+        if(content != null && content.length() != 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }

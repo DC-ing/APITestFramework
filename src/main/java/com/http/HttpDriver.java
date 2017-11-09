@@ -1,6 +1,7 @@
 package com.http;
 
 import com.interfaceData.*;
+import com.utils.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.*;
@@ -47,14 +48,14 @@ public class HttpDriver implements InterfaceDriver {
     }
 
     /**
-     * 使用指定参数组合一条 用于接口测试的主 url
+     * 使用指定参数组合一条 用于接口测试的主 url，保留空值的参数
      *
      * @param interfaceInfo 接口信息
      * @param parameters 参数
      *
      * @return 带指定参数的接口 url
      */
-    public MyURI getURI(InterfaceInfo interfaceInfo, InterfaceParameters parameters) {
+    public MyURI getFullURI(InterfaceInfo interfaceInfo, InterfaceParameters parameters) {
         URIBuilder uriBuilder = new URIBuilder()
                 .setScheme(this.scheme)
                 .setHost(this.host)
@@ -63,7 +64,42 @@ public class HttpDriver implements InterfaceDriver {
         for (int i = 0; i < paramNames.size(); i++) {
             String key = paramNames.get(i);
             String value = parameters.getParameters().get(key);
+            //在这里控制空值传递
             uriBuilder.setParameter(key, value);
+        }
+        MyURI myURI = null;
+        try {
+            myURI = new MyURI(parameters.getMethod(), uriBuilder.build());
+            logger.info("获取到接口的具体地址：" + myURI);
+        } catch (URISyntaxException e) {
+            logger.error("获取接口地址出错");
+            logger.catching(e);
+        }
+        return myURI;
+    }
+
+    /**
+     * 使用指定参数组合一条 用于接口测试的主 url，不保留空值的参数
+     *
+     * @param interfaceInfo 接口信息
+     * @param parameters 参数
+     *
+     * @return 带指定参数的接口 url
+     */
+    public MyURI getPartURI(InterfaceInfo interfaceInfo, InterfaceParameters parameters) {
+        URIBuilder uriBuilder = new URIBuilder()
+                .setScheme(this.scheme)
+                .setHost(this.host)
+                .setPath(interfaceInfo.getPath());
+        List<String> paramNames = interfaceInfo.getParamNames();
+        for (int i = 0; i < paramNames.size(); i++) {
+            String key = paramNames.get(i);
+            String value = parameters.getParameters().get(key);
+            if (StringUtils.isEmpty(value)) {
+                continue;
+            } else {
+                uriBuilder.setParameter(key, value);
+            }
         }
         MyURI myURI = null;
         try {
@@ -105,7 +141,7 @@ public class HttpDriver implements InterfaceDriver {
      */
     @Override
     public HttpResponse sendRequest(MyURI myURI) {
-        logger.info("创建网络连接");
+        logger.debug("创建网络连接");
         httpClient = HttpClients.createDefault();
         URI uri = myURI.getUri();
         HttpUriRequest request;
@@ -173,6 +209,11 @@ public class HttpDriver implements InterfaceDriver {
 
         int statusCode = response.getStatusLine().getStatusCode();
         logger.info("接口返回状态码：[" + statusCode + "]");
+
+        //如果状态码不是200，返回数据为空
+        if (statusCode != 200) {
+            return null;
+        }
 
         HttpEntity entity = response.getEntity();
         //StringBuilder stringBuilder = new StringBuilder();

@@ -10,6 +10,7 @@ import com.utils.TestResult;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -133,47 +134,56 @@ public class Excel_Engine {
      * @return 测试结果
      */
     private synchronized ExcelWriteDatas testInterfaceParameter(HttpDriver driver, InterfaceInfo interfaceInfo, InterfaceParameters interfaceParameters) {
+        String response = null;
         //获取接口测试参数
         String interfaceName = interfaceInfo.getName();
         ExcelWriteDatas writeResult = interfaceParameters.getExcelWriteDatas();
 
-        MyURI myURI = driver.getURI(interfaceInfo, interfaceParameters);
-        //将本次请求的完整地址写入到 Excel 中
-        writeResult.getWriteDatasMap().get(InterfaceParameters.FULL_URL).setData(myURI.getUri().toString());
-        //发起请求，并返回响应数据
-        String response = driver.sendRequestAndGetResponse(myURI);
+        MyURI myFullURI = driver.getFullURI(interfaceInfo, interfaceParameters);
+        MyURI myPartURI = driver.getPartURI(interfaceInfo,interfaceParameters);
 
-        //填写实际测试结果
-        writeResult.getWriteDatasMap().get(InterfaceParameters.ACTUAL).setData(response);
+        ArrayList<MyURI> myURIS = new ArrayList<>(2);
+        myURIS.add(myFullURI);
+        if (!myFullURI.equals(myPartURI)) {
+            myURIS.add(myPartURI);
+        }
+
         //填写是否通过测试
         ExcelCellData isPass = writeResult.getWriteDatasMap().get(InterfaceParameters.IS_PASS);
-        //如果接口返回的状态不是200，则发生异常，响应数据为空
-        if (response != null) {
-            //如果响应的数据匹配预期结果，则判断测试成功
-            if (StringUtils.isMatchPart(response, interfaceParameters.getExpectResult())) {
-                isPass.setData(TestResult.PASS.toString());
-                logger.info("接口 [" + interfaceName + "] 本次测试通过，参数列表：" + interfaceParameters);
+        for (MyURI myURI : myURIS) {
+            //将本次请求的完整地址写入到 Excel 中
+            writeResult.getWriteDatasMap().get(InterfaceParameters.FULL_URL).setData(myURI.getUri().toString());
+            //发起请求，并返回响应数据
+            response = driver.sendRequestAndGetResponse(myURI);
+            //填写实际测试结果
+            writeResult.getWriteDatasMap().get(InterfaceParameters.ACTUAL).setData(response);
+
+            //如果接口返回的状态不是200，则发生异常，响应数据为空
+            if (response != null) {
+                //如果响应的数据匹配预期结果，则判断测试成功
+                if (StringUtils.isMatchPart(response, interfaceParameters.getExpectResult())) {
+                    isPass.setData(TestResult.PASS.toString());
+                    logger.info("接口 [" + interfaceName + "] 本次测试通过，参数列表：" + interfaceParameters);
+                } else {
+                    isPass.setData(TestResult.FAIL.toString());
+                    suiteIsPass = false;
+                    logger.error("接口 [" + interfaceName + "] 本次测试失败，响应数据与预期结果不符合，参数列表：" + interfaceParameters);
+                }
             } else {
+                //接口响应出错，并当做测试失败
                 isPass.setData(TestResult.FAIL.toString());
                 suiteIsPass = false;
-                logger.error("接口 [" + interfaceName + "] 本次测试失败，响应数据与预期结果不符合，参数列表：" + interfaceParameters);
+                logger.error("接口 [" + interfaceName + "] 本次测试失败，响应出错，参数列表：" + interfaceParameters);
             }
-
-        } else {
-            //接口响应出错，并当做测试失败
-            isPass.setData(TestResult.FAIL.toString());
-            suiteIsPass = false;
-            logger.error("接口 [" + interfaceName + "] 本次测试失败，响应出错，参数列表：" + interfaceParameters);
-
         }
+
         //将测试数据，设置到总体的 InterfaceData 中，跳过中间获取的数据值
         writeResult.getWriteDatasMap().put(InterfaceParameters.IS_PASS, isPass);
 
         //如果测试结果通过，且提取公共参数单元格的值不为空
         String publicParameters = interfaceParameters.getExtractedPublicParameters();
         if (isPass.getData().equals(TestResult.PASS.toString())
-                && publicParameters != null
-                && publicParameters != ""
+                && StringUtils.isNotEmpty(publicParameters)
                 ) {
             //提取公共参数
             this.setParameters(response, publicParameters);
@@ -196,9 +206,11 @@ public class Excel_Engine {
         for (int i = 0; i < splits.length; i++) {
             String regex = "\"" + splits[i] + "\":(\"[a-zA-Z0-9_\\-]+\"|[a-zA-Z0-9_\\-]+)";
             String publicParam = StringUtils.getMatchString(response, regex);
-            //对匹配的字符串进行处理，去掉 key 值和一些标点符号
-            publicParam = publicParam.replaceFirst(splits[i],"");
-            publicParam = publicParam.replaceAll("[^a-zA-Z0-9_\\--\\-]+", "");
+            if (StringUtils.isNotEmpty(publicParam)) {
+                //对匹配的字符串进行处理，去掉 key 值和一些标点符号
+                publicParam = publicParam.replaceFirst(splits[i],"");
+                publicParam = publicParam.replaceAll("[^a-zA-Z0-9_\\--\\-]+", "");
+            }
             publicParametersMap.put(splits[i], publicParam);
         }
         if (publicParametersMap != null) {
