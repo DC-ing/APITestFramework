@@ -212,7 +212,7 @@ public class HttpDriver implements InterfaceDriver {
 
         //如果状态码不是200，返回数据为空
         if (statusCode != 200) {
-            return null;
+            return "\"HTTP Response StatusCode\":" + statusCode;
         }
 
         HttpEntity entity = response.getEntity();
