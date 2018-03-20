@@ -35,13 +35,13 @@ public class HttpDriverTest {
 
     @Test
     public void test_getURI() throws Exception {
-        myURI = driver.getURI(interfaceData.getInterfaceInfo(), interfaceData.getParametersList().get(0));
+        myURI = driver.getFullURI(interfaceData.getInterfaceInfo(), interfaceData.getParametersList().get(0));
         Assert.assertNotNull(myURI);
     }
 
     @Test
     public void test_Response() throws Exception {
-        myURI = driver.getURI(interfaceData.getInterfaceInfo(), interfaceData.getParametersList().get(0));
+        myURI = driver.getFullURI(interfaceData.getInterfaceInfo(), interfaceData.getParametersList().get(0));
         String responseData = driver.sendRequestAndGetResponse(myURI);
     }
 
