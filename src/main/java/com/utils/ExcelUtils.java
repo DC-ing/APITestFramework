@@ -62,7 +62,7 @@ public class ExcelUtils {
 	 * @return FileInputStream
 	 */
 	public FileInputStream getExcelFile(String fileFullPath) {
-		FileInputStream fis = new FileUtils().readFile(fileFullPath);
+		FileInputStream fis = new FileUtils().setFileInputStream(fileFullPath);
 		try {
 			if (this.getExcelType().equalsIgnoreCase(XLSX)) {
 				workbook = new XSSFWorkbook(fis); 						//读取excel文件

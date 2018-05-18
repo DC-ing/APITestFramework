@@ -12,13 +12,11 @@ import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * 一个主 URl，一个 HttpDriver
@@ -56,21 +54,34 @@ public class HttpDriver implements InterfaceDriver {
      * @return 带指定参数的接口 url
      */
     public MyURI getFullURI(InterfaceInfo interfaceInfo, InterfaceParameters parameters) {
+        MyURI myURI = null;
+
         URIBuilder uriBuilder = new URIBuilder()
                 .setScheme(this.scheme)
                 .setHost(this.host)
                 .setPath(interfaceInfo.getPath());
-        List<String> paramNames = interfaceInfo.getParamNames();
-        for (int i = 0; i < paramNames.size(); i++) {
-            String key = paramNames.get(i);
+        if (parameters.getParameters() == null) {
+            try {
+                myURI = new MyURI(parameters.getMethod(), uriBuilder.build());
+                //logger.info("获取到接口的具体地址：" + myURI);
+            } catch (URISyntaxException e) {
+                logger.error("获取接口地址出错");
+                logger.catching(e);
+            }
+            return myURI;
+        }
+
+        Set<String> paramNames = parameters.getParameters().keySet();
+        Iterator<String> iterator = paramNames.iterator();
+        while(iterator.hasNext()){
+            String key = iterator.next();
             String value = parameters.getParameters().get(key);
             //在这里控制空值传递
             uriBuilder.setParameter(key, value);
         }
-        MyURI myURI = null;
         try {
             myURI = new MyURI(parameters.getMethod(), uriBuilder.build());
-            logger.info("获取到接口的具体地址：" + myURI);
+            //logger.info("获取到接口的具体地址：" + myURI);
         } catch (URISyntaxException e) {
             logger.error("获取接口地址出错");
             logger.catching(e);
@@ -91,9 +102,11 @@ public class HttpDriver implements InterfaceDriver {
                 .setScheme(this.scheme)
                 .setHost(this.host)
                 .setPath(interfaceInfo.getPath());
-        List<String> paramNames = interfaceInfo.getParamNames();
-        for (int i = 0; i < paramNames.size(); i++) {
-            String key = paramNames.get(i);
+        Set<String> paramNames = parameters.getParameters().keySet();
+        Iterator<String> iterator = paramNames.iterator();
+
+        while (iterator.hasNext()) {
+            String key = iterator.next();
             String value = parameters.getParameters().get(key);
             if (StringUtils.isEmpty(value)) {
                 continue;
@@ -101,10 +114,11 @@ public class HttpDriver implements InterfaceDriver {
                 uriBuilder.setParameter(key, value);
             }
         }
+
         MyURI myURI = null;
         try {
             myURI = new MyURI(parameters.getMethod(), uriBuilder.build());
-            logger.info("获取到接口的具体地址：" + myURI);
+            //logger.info("获取到接口的具体地址：" + myURI);
         } catch (URISyntaxException e) {
             logger.error("获取接口地址出错");
             logger.catching(e);
@@ -124,7 +138,7 @@ public class HttpDriver implements InterfaceDriver {
         MyURI myURI = null;
         try {
             myURI = new MyURI(uriRequestMethod, new URIBuilder(uri).build());
-            logger.info("获取到接口的具体地址：" + myURI);
+            //logger.info("获取到接口的具体地址：" + myURI);
         } catch (URISyntaxException e) {
             logger.error("获取接口地址出错");
             logger.catching(e);

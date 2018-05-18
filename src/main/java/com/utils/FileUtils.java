@@ -3,10 +3,9 @@ package com.utils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 文件封装类，输出日志类
@@ -31,7 +30,7 @@ public class FileUtils {
 	 * 
 	 * @return FileInputStream 对象
 	 */
-	public FileInputStream readFile(String fileFullPath) {
+	public FileInputStream setFileInputStream(String fileFullPath) {
 		//创建一个 File 对象，设置默认值为空
 		File file = null;
 		//创建一个 FileInputStream 对象，用来读取文件
@@ -47,6 +46,33 @@ public class FileUtils {
 	}
 
 	/**
+	 * 读取文件内容
+	 *
+	 * @param fileFullPath 文件路径
+	 *
+	 * @return File 文本
+	 */
+	public static List<String> readFile(String fileFullPath) {
+		List<String> stringList = new ArrayList<>();
+
+		File keyFile = new File(fileFullPath);
+		String readKey = null;
+		try {
+			BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(keyFile)));
+			while ((readKey = br.readLine())!= null) {
+				stringList.add(readKey);
+			}
+			br.close();
+		} catch (FileNotFoundException e) {
+			logger.error("找不到文件:" + fileFullPath + "\n", e);
+		} catch (IOException e) {
+			logger.error("读取文件[" + fileFullPath + "]，发生异常\n", e);
+		}
+		logger.info("读取到的内容有：" + stringList);
+		return stringList;
+	}
+
+	/**
 	 * 将字符串写入到指定文件中
 	 *
 	 * @param content 写入内容
@@ -57,10 +83,17 @@ public class FileUtils {
 		createFile(filePath);
 		FileWriter fileWriter;
 		try {
-			fileWriter = new FileWriter(filePath);
-			fileWriter.write(content);
+			fileWriter = new FileWriter(filePath, true);
+
+			PrintWriter printWriter = new PrintWriter(fileWriter);
+			printWriter.println(content);
+			printWriter.println("\n");
+			printWriter.flush();
 			fileWriter.flush();
+
+			printWriter.close();
 			fileWriter.close();
+
 		} catch(IOException e) {
 			logger.catching(e);
 		}
