@@ -32,6 +32,11 @@ public class InterfaceInfo {
         this.paramNames = paramNames;
     }
 
+    public InterfaceInfo(String name, String path) {
+        this.name = name;
+        this.path = path;
+    }
+
     public String getName() {
         return name;
     }

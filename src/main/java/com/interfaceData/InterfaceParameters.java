@@ -20,7 +20,7 @@ public class InterfaceParameters {
     public static final String EXTRACTED_PUBLIC_PARAMETERS = "提取公共参数";
 
     //接口的调用方式，一般有 GET、POST 等
-    private String method;
+    private String method = "GET";
     //接口的参数数据
     private Map<String, String> parameters;
     //预期接口返回的字段或数据，可用于断言
