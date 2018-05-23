@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -32,7 +33,7 @@ public class HttpDriver implements InterfaceDriver {
     private final String host;
 
     private CloseableHttpClient httpClient;
-
+    private Map<String, String> headers;
     /**
      * 一个 host 配置一个 HttpDriver
      *
@@ -147,6 +148,16 @@ public class HttpDriver implements InterfaceDriver {
     }
 
     /**
+     * 设置请求头信息，同样可以设置 cookies
+     *
+     * @param headers 请求头
+     */
+    @Override
+    public void setHeader(Map<String, String> headers) {
+        this.headers = headers;
+    }
+
+    /**
      * 发送请求，自动判断请求方法
      *
      * @param myURI 带请求方法的 URI
@@ -187,6 +198,13 @@ public class HttpDriver implements InterfaceDriver {
             default:
                 request = new HttpGet(uri);
                 break;
+        }
+        //将手动设置的请求头一一设置到本次请求中
+        if (headers.size() > 0) {
+            Set<String> headerKeys = headers.keySet();
+            for (String key : headerKeys) {
+                request.addHeader(key, headers.get(key));
+            }
         }
         logger.info("正在发起请求：" + myURI);
         HttpResponse response = null;
